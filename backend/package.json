@@ -1,0 +1,29 @@
+{
+	"name": "dockerpg",
+	"module": "index.ts",
+	"type": "module",
+	"private": true,
+	"devDependencies": {
+		"@biomejs/biome": "2.5.0",
+		"@types/bun": "^1.3.14",
+		"@types/node": "^26.0.0",
+		"@types/pg": "^8.20.0",
+		"drizzle-kit": "^0.31.10",
+		"hono": "^4.12.26",
+		"tsx": "^4.22.4"
+	},
+	"peerDependencies": {
+		"typescript": "^5"
+	},
+	"scripts": {
+		"dev": "bun run --hot src/server",
+		"format": "bunx --bun @biomejs/biome format --write",
+		"lint": "bunx --bun @biomejs/biome lint --write",
+		"check": "bunx --bun @biomejs/biome check --write"
+	},
+	"dependencies": {
+		"dotenv": "^17.4.2",
+		"drizzle-orm": "^0.45.2",
+		"pg": "^8.22.0"
+	}
+}
