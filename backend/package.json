@@ -19,7 +19,10 @@
 		"dev": "bun run --hot src/server",
 		"format": "bunx --bun @biomejs/biome format --write",
 		"lint": "bunx --bun @biomejs/biome lint --write",
-		"check": "bunx --bun @biomejs/biome check --write"
+		"check": "bunx --bun @biomejs/biome check --write",
+		"push": "bunx drizzle-kit push",
+		"generate": "bunx drizzle-kit generate",
+		"migrate": "bunx drizzle-kit migrate"
 	},
 	"dependencies": {
 		"dotenv": "^17.4.2",
