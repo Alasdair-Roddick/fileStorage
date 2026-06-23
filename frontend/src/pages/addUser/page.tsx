@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { addUser } from "../../api/addUser";
+import { addUser } from "../../../../admin/src/api/addUser";
 
 export default function AddUser() {
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
     const [status, setStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
     const [loading, setLoading] = useState(false);
 
@@ -11,7 +12,7 @@ export default function AddUser() {
         setStatus(null);
         setLoading(true);
         try {
-            const result = await addUser({ name, email });
+            const result = await addUser({ name, email, password });
             setStatus({ type: "success", message: result.message });
         } catch (err) {
             setStatus({ type: "error", message: err instanceof Error ? err.message : "Something went wrong" });
@@ -50,12 +51,23 @@ export default function AddUser() {
                             onChange={(e) => setEmail(e.target.value)}
                         />
                     </div>
+
+                    <div className="flex flex-col gap-1">
+                        <label className="text-xs font-medium text-zinc-600">Password</label>
+                        <input
+                            className="border border-zinc-200 rounded px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent transition"
+                            placeholder="********"
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                        />
+                    </div>
                 </div>
 
                 <button
                     className="w-full bg-zinc-900 text-white text-sm font-medium rounded py-2 hover:bg-zinc-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                     type="submit"
-                    disabled={!name || !email || loading}
+                    disabled={!name || !email || !password || loading}
                     onClick={handleClick}
                 >
                     {loading ? "Submitting..." : "Submit"}

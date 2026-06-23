@@ -6,7 +6,7 @@ export async function addUser(user: user): Promise<{ success: boolean; message: 
         headers: {
             "Content-Type": "application/json"
         },
-        body: JSON.stringify({ userName: user.name, userEmail: user.email })
+        body: JSON.stringify({ userName: user.name, userEmail: user.email, password: user.password, isAdmin: user.isAdmin })
     });
 
     const data = await resp.json();
