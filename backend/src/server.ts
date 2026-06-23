@@ -39,14 +39,10 @@ async function checkExists(email: string) {
 app.post("/api/users/create", async (c) => {
 	const body = await c.req.json<CreateUserBody>();
 
-	const { userName, userEmail } = body;
+	const { userName, userEmail, password } = body;
 
-
-    
-    
-    // Check if values are populated
-	if (!userName || !userEmail) {
-		return c.json("name and email are required", 400);
+	if (!userName || !userEmail || !password) {
+		return c.json("name, email, and password are required", 400);
 	}
 
     // Check if user exists
@@ -58,7 +54,8 @@ app.post("/api/users/create", async (c) => {
 
 
 	try {
-		await db.insert(users).values({ name: userName, email: userEmail });
+		const passwordHash = await Bun.password.hash(password);
+		await db.insert(users).values({ name: userName, email: userEmail, passwordHash });
 	} catch (err) {
 		return c.json(
 			{

@@ -12,10 +12,21 @@ export const users = pgTable("users", {
 	id: serial("id").primaryKey(),
 	email: text("email").notNull(),
 	name: text("name").notNull(),
+	passwordHash: text("password_hash").notNull(),
 	createdAt: timestamp("created_at", { withTimezone: true })
 		.notNull()
 		.defaultNow(),
 });
+
+
+export const admins = pgTable("admins", {
+	id: serial("id").primaryKey(),
+	name: text("name").notNull(),
+	passwordHash: text("password_hash").notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true })
+		.notNull()
+		.defaultNow(),
+})
 
 export const folders = pgTable("folders", {
 	id: serial("id").primaryKey(),
@@ -76,3 +87,4 @@ export type Folder = typeof folders.$inferSelect;
 export type NewFolder = typeof folders.$inferInsert;
 export type File = typeof files.$inferSelect;
 export type NewFile = typeof files.$inferInsert;
+export type Admin = typeof admins.$inferSelect;
