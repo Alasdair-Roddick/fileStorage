@@ -12,6 +12,7 @@
 		"check": "bunx --bun @biomejs/biome check --write"
 	},
 	"dependencies": {
+		"@clerk/react": "^6.11.0",
 		"react": "^19.2.6",
 		"react-dom": "^19.2.6"
 	},

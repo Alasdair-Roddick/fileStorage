@@ -1,3 +1,4 @@
+import { createClerkClient, verifyToken } from "@clerk/backend";
 import { eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
@@ -6,14 +7,43 @@ import db from "./db/db";
 import { users } from "./db/schema";
 import type { CreateUserBody } from "./types/createUserBody";
 
+const clerk = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
+
 const app = new Hono();
 
 app.use("*", logger());
 app.use("/api/*", cors());
 
+async function requireAuth(c: any, next: () => Promise<void>) {
+	const authHeader = c.req.header("Authorization");
+	if (!authHeader?.startsWith("Bearer ")) {
+		return c.json({ error: "Unauthorized" }, 401);
+	}
+	const token = authHeader.slice(7);
+	try {
+		const payload = await verifyToken(token, { secretKey: process.env.CLERK_SECRET_KEY });
+		c.set("clerkUserId", payload.sub);
+		c.set("clerkPayload", payload);
+	} catch {
+		return c.json({ error: "Unauthorized" }, 401);
+	}
+	await next();
+}
+
+async function requireAdmin(c: any, next: () => Promise<void>) {
+	await requireAuth(c, async () => {});
+	if (c.res.status === 401) return;
+	const userId = c.get("clerkUserId");
+	const user = await clerk.users.getUser(userId);
+	if ((user.publicMetadata as any)?.role !== "admin") {
+		return c.json({ error: "Forbidden" }, 403);
+	}
+	await next();
+}
+
 app.get("/health", (c) => c.text("ok"));
 
-app.get("/api/users/:id", async (c) => {
+app.get("/api/users/:id", requireAuth, async (c) => {
 	const user = await db
 		.select()
 		.from(users)
@@ -21,44 +51,24 @@ app.get("/api/users/:id", async (c) => {
 	if (!user[0]) {
 		return c.json("user not found", 404);
 	}
-
 	return c.text(user[0].name);
 });
 
-
-app.post("/api/users", async (c) => {
+app.get("/api/users", requireAdmin, async (c) => {
 	const allUsers = await db.select().from(users);
-	// return only the id, name, and email of each user
-	const response = allUsers.map((user) => ({
-		id: user.id,
-		name: user.name,
-		email: user.email,
-	}));
-
-	return c.json(response);
+	return c.json(allUsers.map((u) => ({ id: u.id, name: u.name, email: u.email })));
 });
 
-async function checkExists(email: string) {
-    const user = await db.select().from(users).where(eq(users.email, email))
-
-    if (!user[0]) {
-        return false
-    }
-
-    return true;
-}
-
-
-app.post("/api/users/create", async (c) => {
+app.post("/api/users/create", requireAdmin, async (c) => {
 	const body = await c.req.json<CreateUserBody>();
-
 	const { userName, userEmail, password, isAdmin } = body;
 
 	if (!userName || !userEmail || !password) {
 		return c.json("name, email, and password are required", 400);
 	}
 
-	if (await checkExists(userEmail)) {
+	const existing = await db.select().from(users).where(eq(users.email, userEmail));
+	if (existing[0]) {
 		return c.json("User with that email exists", 400);
 	}
 
